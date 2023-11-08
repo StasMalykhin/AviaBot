@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.StasMalykhin.aviabot.entity.Airport;
 import com.github.StasMalykhin.aviabot.repository.AirportRepository;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,15 +22,18 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @Log4j
 @RequiredArgsConstructor
-public class CompleteDatabaseWithAirportsService extends APIConnectionService {
+public class AirportService extends APIConnectionService {
     private final AirportRepository airportRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     @Value("${travelpayouts.endpoint.iataAirportCodes}")
     private String iataAirportCodesURI;
 
-    @PostConstruct
-    public void uploadAirportsInBD() {
+    public boolean checkFullnessOfDatabase() {
+        return airportRepository.findAll().isEmpty();
+    }
+
+    public void fillDatabase() {
         log.info("IATA коды аэропортов загружены в БД");
         HttpEntity<HttpHeaders> request = createRequestWithHeaders();
         var response = restTemplate.exchange(iataAirportCodesURI, HttpMethod.GET, request, String.class).getBody();

@@ -3,9 +3,8 @@ package com.github.StasMalykhin.aviabot.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.StasMalykhin.aviabot.entity.Airline;
-import com.github.StasMalykhin.aviabot.repository.AirlineRepository;
-import jakarta.annotation.PostConstruct;
+import com.github.StasMalykhin.aviabot.entity.City;
+import com.github.StasMalykhin.aviabot.repository.CityRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,25 +15,28 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Загружает при запуске бота IATA коды авиакомпаний в БД.
+ * Загружает при запуске бота IATA коды городов в БД.
  *
  * @author Stanislav Malykhin
  */
 @Service
 @Log4j
 @RequiredArgsConstructor
-public class CompleteDatabaseWithAirlinesService extends APIConnectionService {
-    private final AirlineRepository airlineRepository;
+public class CityService extends APIConnectionService {
+    private final CityRepository cityRepository;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
-    @Value("${travelpayouts.endpoint.iataAirlineCodes}")
-    private String iataAirlineCodesURI;
+    @Value("${travelpayouts.endpoint.iataCityCodes}")
+    private String iataCityCodesURI;
 
-    @PostConstruct
-    public void uploadAirlinesInBD() {
-        log.info("IATA коды авиакомпаний загружены в БД");
+    public boolean checkFullnessOfDatabase() {
+        return cityRepository.findAll().isEmpty();
+    }
+
+    public void fillDatabase() {
+        log.info("IATA коды городов загружены в БД");
         HttpEntity<HttpHeaders> request = createRequestWithHeaders();
-        var response = restTemplate.exchange(iataAirlineCodesURI, HttpMethod.GET, request, String.class).getBody();
+        var response = restTemplate.exchange(iataCityCodesURI, HttpMethod.GET, request, String.class).getBody();
         JsonNode jsonNode = null;
         try {
             jsonNode = objectMapper.readTree(response);
@@ -42,8 +44,9 @@ public class CompleteDatabaseWithAirlinesService extends APIConnectionService {
             log.error(e);
         }
         for (int i = 0; i < jsonNode.size(); i++) {
-            airlineRepository.save(Airline.builder()
-                    .airlineCode(jsonNode.get(i).get("code").asText())
+            cityRepository.save(City.builder()
+                    .cityCode(jsonNode.get(i).get("code").asText())
+                    .countryCode(jsonNode.get(i).get("country_code").asText())
                     .name(jsonNode.get(i).get("name").asText())
                     .nameTranslations(jsonNode.get(i).get("name_translations").get("en").asText())
                     .build());
