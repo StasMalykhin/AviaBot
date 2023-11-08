@@ -6,6 +6,11 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
+/**
+ * Загружает при запуске бота данные в БД.
+ *
+ * @author Stanislav Malykhin
+ */
 @Log4j
 @Component
 @RequiredArgsConstructor

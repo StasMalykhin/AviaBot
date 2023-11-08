@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Загружает при запуске бота IATA коды городов в БД.
+ * Загружает IATA коды городов и проверяет наличие записей в БД.
  *
  * @author Stanislav Malykhin
  */
@@ -30,7 +30,7 @@ public class CityService extends APIConnectionService {
     private String iataCityCodesURI;
 
     public boolean checkFullnessOfDatabase() {
-        return cityRepository.findAll().isEmpty();
+        return cityRepository.count() == 0;
     }
 
     public void fillDatabase() {

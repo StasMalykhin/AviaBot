@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * Загружает при запуске бота IATA коды авиакомпаний в БД.
+ * Загружает IATA коды авиакомпаний и проверяет наличие записей в БД.
  *
  * @author Stanislav Malykhin
  */
@@ -30,7 +30,7 @@ public class AirlineService extends APIConnectionService {
     private String iataAirlineCodesURI;
 
     public boolean checkFullnessOfDatabase() {
-        return airlineRepository.findAll().isEmpty();
+        return airlineRepository.count() == 0;
     }
 
     public void fillDatabase() {
